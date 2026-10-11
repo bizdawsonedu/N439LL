@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>N439LL Weight &amp; Balance</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14202b;--muted:#5d6b78;--line:#e2e6ea;--accent:#0b6bcb;--soft:#e7f1fc;--ok:#1a8a4a;--bad:#d03a3a;--warn:#fff4d6;--warnink:#6b4e00;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f151b;--card:#18212a;--ink:#e8eef4;--muted:#9aa8b5;--line:#2a3541;--accent:#5aa7f5;--soft:#1c2f44;--ok:#4cc784;--bad:#f06b6b;--warn:#3a3012;--warnink:#f0d78a}}
+:root[data-theme="dark"]{--bg:#0f151b;--card:#18212a;--ink:#e8eef4;--muted:#9aa8b5;--line:#2a3541;--accent:#5aa7f5;--soft:#1c2f44;--ok:#4cc784;--bad:#f06b6b;--warn:#3a3012;--warnink:#f0d78a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem;margin:0 0 4px}h2{font-size:1.05rem;margin:0 0 10px}
+.sub{color:var(--muted);margin:0 0 14px;font-size:.92rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0}
+.note{background:var(--warn);color:var(--warnink);border-radius:12px;padding:10px 14px;font-size:.88rem;margin:12px 0}
+.f{display:grid;grid-template-columns:1fr 96px 30px;gap:8px;align-items:center;padding:4px 0;font-size:.95rem}
+.f em{font-style:normal;color:var(--muted);font-size:.8rem}
+input[type=number]{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font-size:1rem}
+.ck{display:flex;gap:10px;align-items:center;padding:6px 0;font-size:.95rem}.ck input{width:20px;height:20px;accent-color:var(--accent)}
+.env{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:.8rem;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-size:.78rem;text-transform:uppercase}
+.big{font-size:1.1rem;font-weight:700}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.mu{color:var(--muted)}
+ul.ch{list-style:none;margin:0;padding:0}ul.ch li{padding:5px 0;border-bottom:1px solid var(--line);font-size:.93rem}
+svg{width:100%;height:auto;display:block}
+.src{font-size:.78rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>🚁 N439LL Weight &amp; Balance</h1>
+<p class="sub">R44 Raven II. Arms, limits and loading method from the R44 II POH Section 2 and Section 6 (datum 100 in. forward of the mast).</p>
+<div class="note" id="sample">Empty weight and arms are the <b>POH sample values</b>. Enter N439LL's from its current W&amp;B record.</div>
+
+<div class="card"><h2>Aircraft (basic empty)</h2><div id="ac"></div><p class="src">From the Robinson record sheet (S/N 10007), actual weighing 15 Oct 2002: 1,526.95 lb, 106.0 in, +0.4 in. Update these if the aircraft has been reweighed or equipment has changed since.</p></div>
+<div class="card"><h2>Seats (lb)</h2><div id="seats"></div></div>
+<div class="card"><h2>Baggage under seats (lb, 50 max each)</h2><div id="bag"></div></div>
+<div class="card"><h2>Fuel (6 lb/gal, non-bladder tanks)</h2><div id="fuel"></div></div>
+<div class="card"><h2>Removed from empty weight</h2>
+<label class="ck"><input type="checkbox" id="d1"> Front right door off</label>
+<label class="ck"><input type="checkbox" id="d2"> Front left door off</label>
+<label class="ck"><input type="checkbox" id="d3"> Rear right door off</label>
+<label class="ck"><input type="checkbox" id="d4"> Rear left door off</label>
+<label class="ck"><input type="checkbox" id="ctl"> Left seat controls removed</label></div>
+
+<div class="card"><h2>Results</h2><div id="res"></div></div>
+<div class="card"><h2>Weight &amp; balance picture</h2><div id="chart"></div>
+<p class="src">Dot = takeoff, hollow = zero usable fuel. The dashed line shows the CG shift as fuel burns.</p>
+<div id="diag" style="margin-top:14px"></div>
+<p class="src" id="dtxt"></p>
+<p class="src">Top view, stations to scale (3 px per inch). Seats show person + baggage lb; tanks show fuel level; CG dots sit at the computed station and lateral position.</p></div>
+<div class="card"><h2>Checks</h2><ul class="ch" id="chk"></ul></div>
+
+<div class="card"><h2>CG limits (POH Section 2, Fig. on p. 2-4)</h2>
+<p class="src">Pre-filled from photos of the R44 II CG limits figure (POH Section 2): forward limit 92.0 in, then 93.0 in at 2,500 lb; aft limit read from the 260 cm line, about 102.4 in, narrowing to 98.0 in at 2,500 lb. Check each row against the page and edit if needed. The POH also notes that at full fuel the CG should stay no further forward than the dashed line (about 93.5 in) so it remains in limits at zero fuel; the takeoff and zero-fuel checks cover this. Arms in inches from the datum.</p>
+<div class="env"><span>Weight (lb)</span><span>Forward limit</span><span>Aft limit</span></div>
+<div class="env" id="envr"></div>
+<div id="lat"></div></div>
+<p class="src">Always verify against the current POH and the aircraft's own W&amp;B record. Fuel burn moves CG forward: both takeoff and zero-fuel conditions must be in limits.</p>
+</main>
+<script>
+var $=function(i){return document.getElementById(i)},ALL=[],DEF={};
+function inp(id,lb,val,u){ALL.push(id);DEF[id]=val;return '<label class="f"><span>'+lb+'</span><input id="'+id+'" type="number" inputmode="decimal" step="any" value="'+val+'" placeholder="0"><em>'+u+'</em></label>'}
+var S=[["pf","Pilot (right front)",49.5,12.2,0],["lf","Front left passenger",49.5,-10.4,0],["rr","Rear right passenger",79.5,12.2,0],["rl","Rear left passenger",79.5,-12.2,0]];
+var Bg=[["bfr","Under front right seat",44,11.5,"pf"],["bfl","Under front left seat",44,-11.5,"lf"],["brr","Under rear right seat",79.5,12.2,"rr"],["brl","Under rear left seat",79.5,-12.2,"rl"]];
+$("ac").innerHTML=inp("ew","Basic empty weight",1526.95,"lb")+inp("ea","Empty long. arm",106.0,"in")+inp("el","Empty lateral arm (+R)",0.4,"in");
+$("seats").innerHTML=S.map(function(s){return inp(s[0],s[1],0,"lb")}).join("");
+$("bag").innerHTML=Bg.map(function(s){return inp(s[0],s[1],0,"lb")}).join("");
+$("fuel").innerHTML=inp("mg","Main tank (30.6 max)",0,"gal")+inp("ag","Aux tank (18.3 max)",0,"gal");
+$("envr").innerHTML=[1,2,3].map(function(i){return inp("e"+i+"w","",i==1?1600:i==3?2500:"","").replace(/<span><\/span>/,"")+""}).join("");
+$("envr").className="";
+var ENV=[[1600,92.0,102.4],[2100,92.0,102.4],[2300,92.0,100.2],[2500,93.0,98]];var er="";[1,2,3,4].forEach(function(i){er+='<div class="env" style="margin:4px 0">'+['w','f','a'].map(function(k){var id="e"+i+k;ALL.push(id);DEF[id]=ENV[i-1][k=="w"?0:k=="f"?1:2];return '<input type="number" inputmode="decimal" step="any" id="'+id+'" value="'+DEF[id]+'" placeholder="'+(i==2&&k=="w"?"mid (opt.)":"")+'">'}).join("")+'</div>'});
+$("envr").innerHTML=er;
+$("lat").innerHTML='<p class="src">Lateral limits (read from the figure): ±3.0 in forward of station 100, narrowing to about ±1.6 in at the aft limit.</p>';
+["d1","d2","d3","d4","ctl"].forEach(function(i){ALL.push(i)});
+var v=function(i){return parseFloat($(i).value)||0};
+function calc(fuel){var w=0,m=0,l=0;function a(x,r,t){w+=x;m+=x*r;l+=x*t}
+a(v("ew"),v("ea"),v("el"));
+if($("d1").checked)a(-7.5,49.4,24);if($("d2").checked)a(-7.5,49.4,-24);
+if($("d3").checked)a(-7,75.4,23);if($("d4").checked)a(-7,75.4,-23);
+if($("ctl").checked)a(-2,31,-13);
+S.forEach(function(s){a(v(s[0]),s[2],s[3])});Bg.forEach(function(s){a(v(s[0]),s[2],s[3])});
+if(fuel){a(v("mg")*6,106,-13.5);a(v("ag")*6,102,13)}
+return{w:w,cg:w?m/w:0,lat:w?l/w:0,m:m}}
+function env(){var p=[];[1,2,3,4].forEach(function(i){var w=v("e"+i+"w"),f=$("e"+i+"f").value,a=$("e"+i+"a").value;if(w&&f!==""&&a!=="")p.push([w,+f,+a])});p.sort(function(x,y){return x[0]-y[0]});return p.length>1?p:null}
+function lim(p,w){if(!p||w<p[0][0]||w>p[p.length-1][0])return null;for(var i=1;i<p.length;i++)if(w<=p[i][0]){var t=(w-p[i-1][0])/(p[i][0]-p[i-1][0]);return[p[i-1][1]+t*(p[i][1]-p[i-1][1]),p[i-1][2]+t*(p[i][2]-p[i-1][2])]}}
+function cgok(r,p){var q=lim(p,r.w);if(!q)return null;return r.cg>=q[0]&&r.cg<=q[1]}
+function latlim(c){return c<=100?3:Math.max(1.6,3-(c-100)*0.583)}
+function latok(r){return Math.abs(r.lat)<=latlim(r.cg)}
+function run(){
+var p=env(),T=calc(1),Z=calc(0),cs=[];
+function row(ok,txt,unk){cs.push('<li>'+(ok===null?'<span class="mu">⚠ '+txt+'</span>':ok?'<span class="ok">✓</span> '+txt:'<span class="bad">✗ '+txt+'</span>')+'</li>')}
+row(T.w<=2500,"Takeoff weight "+T.w.toFixed(1)+" lb (max 2500)");
+row(Z.w>=1600,"Zero-fuel weight "+Z.w.toFixed(1)+" lb (min 1600)");
+S.forEach(function(s,i){var b=Bg[i],t=v(s[0])+v(b[0]);row(t<=300,s[1]+" + baggage "+t+" lb (max 300)")});
+Bg.forEach(function(b){if(v(b[0])>50)row(false,b[1]+": "+v(b[0])+" lb exceeds 50 lb")});
+row(v("mg")<=30.6&&v("ag")<=18.3,"Fuel within 30.6 + 18.3 gal usable (non-bladder tanks)");
+if(v("pf")>0&&v("pf")<150&&!v("lf")&&!v("rr")&&!v("rl"))row(null,"Solo pilot under 150 lb: CG may need ballast; compute carefully");
+var ct=cgok(T,p),cz=cgok(Z,p);
+row(ct,p?"Takeoff CG "+T.cg.toFixed(1)+" in "+(ct===null?"(weight outside envelope range)":""):"Enter CG envelope below to check takeoff CG");
+row(cz,p?"Zero-fuel CG "+Z.cg.toFixed(1)+" in "+(cz===null?"(weight outside envelope range)":""):"Enter CG envelope below to check zero-fuel CG");
+var lt=latok(T),lz=latok(Z);
+row(lt&&lz,"Lateral CG T "+T.lat.toFixed(1)+" / Z "+Z.lat.toFixed(1)+" in (limit ±"+latlim(T.cg).toFixed(1)+" / ±"+latlim(Z.cg).toFixed(1)+")");
+$("chk").innerHTML=cs.join("");
+function f(x,d){return x.toFixed(d)}
+$("res").innerHTML='<table><tr><th></th><th>Takeoff</th><th>Zero fuel</th></tr><tr><td>Weight (lb)</td><td class="big">'+f(T.w,1)+'</td><td class="big">'+f(Z.w,1)+'</td></tr><tr><td>Long. CG (in)</td><td class="big">'+f(T.cg,1)+'</td><td class="big">'+f(Z.cg,1)+'</td></tr><tr><td>Lateral CG (in, +R)</td><td>'+f(T.lat,1)+'</td><td>'+f(Z.lat,1)+'</td></tr><tr><td>Moment (in-lb)</td><td>'+Math.round(T.m).toLocaleString()+'</td><td>'+Math.round(Z.m).toLocaleString()+'</td></tr></table>';
+chart(T,Z,p,ct,cz);diagram(T,Z,ct,cz);
+$("sample").style.display=(v("ew")==1510&&v("ea")==106.5&&v("el")==0.2)?"block":"none";
+}
+function chart(T,Z,p,ct,cz){
+var xs=[T.cg,Z.cg,90,102];if(p)p.forEach(function(q){xs.push(q[1],q[2])});
+var x0=Math.floor(Math.min.apply(null,xs)-1),x1=Math.ceil(Math.max.apply(null,xs)+1),y0=1500,y1=2600,W=360,H=300,ml=44,mr=12,mt=10,mb=34;
+function X(a){return ml+(a-x0)/(x1-x0)*(W-ml-mr)}function Y(w){return H-mb-(w-y0)/(y1-y0)*(H-mt-mb)}
+var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="CG envelope chart"><rect x="'+ml+'" y="'+mt+'" width="'+(W-ml-mr)+'" height="'+(H-mt-mb)+'" fill="none" stroke="var(--line)"/>';
+for(var w=1600;w<=2600;w+=200)s+='<line x1="'+ml+'" x2="'+(W-mr)+'" y1="'+Y(w)+'" y2="'+Y(w)+'" stroke="var(--line)"/><text x="'+(ml-5)+'" y="'+(Y(w)+4)+'" font-size="10" text-anchor="end" fill="var(--muted)">'+w+'</text>';
+for(var a=x0;a<=x1;a+=2)s+='<line y1="'+mt+'" y2="'+(H-mb)+'" x1="'+X(a)+'" x2="'+X(a)+'" stroke="var(--line)"/><text x="'+X(a)+'" y="'+(H-mb+14)+'" font-size="10" text-anchor="middle" fill="var(--muted)">'+a+'</text>';
+s+='<text x="'+(W/2)+'" y="'+(H-4)+'" font-size="10" text-anchor="middle" fill="var(--muted)">Longitudinal CG (in aft of datum)</text><text x="10" y="'+(H/2)+'" font-size="10" fill="var(--muted)" transform="rotate(-90 10 '+(H/2)+')" text-anchor="middle">Weight (lb)</text>';
+s+='<line x1="'+ml+'" x2="'+(W-mr)+'" y1="'+Y(2500)+'" y2="'+Y(2500)+'" stroke="var(--bad)" stroke-dasharray="4 3"/><text x="'+(W-mr-2)+'" y="'+(Y(2500)-3)+'" font-size="9" text-anchor="end" fill="var(--bad)">Max 2500</text>';
+s+='<line x1="'+ml+'" x2="'+(W-mr)+'" y1="'+Y(1600)+'" y2="'+Y(1600)+'" stroke="var(--bad)" stroke-dasharray="4 3"/><text x="'+(W-mr-2)+'" y="'+(Y(1600)-3)+'" font-size="9" text-anchor="end" fill="var(--bad)">Min 1600</text>';
+if(p){var pts=p.map(function(q){return X(q[1])+","+Y(q[0])}).concat(p.slice().reverse().map(function(q){return X(q[2])+","+Y(q[0])}));s+='<polygon points="'+pts.join(" ")+'" fill="var(--soft)" fill-opacity=".7" stroke="var(--accent)" stroke-width="2"/>'}
+else s+='<text x="'+(W/2)+'" y="'+(Y(2050))+'" font-size="11" text-anchor="middle" fill="var(--muted)">Enter CG limits below to draw the envelope</text>';
+function col(o){return o===null?"var(--accent)":o?"var(--ok)":"var(--bad)"}
+s+='<line x1="'+X(T.cg)+'" y1="'+Y(T.w)+'" x2="'+X(Z.cg)+'" y2="'+Y(Z.w)+'" stroke="var(--muted)" stroke-width="2" stroke-dasharray="3 3"/>';
+s+='<circle cx="'+X(Z.cg)+'" cy="'+Y(Z.w)+'" r="7" fill="var(--card)" stroke="'+col(cz)+'" stroke-width="3"/><circle cx="'+X(T.cg)+'" cy="'+Y(T.w)+'" r="7" fill="'+col(ct)+'"/>';
+$("chart").innerHTML=s+'</svg>'}
+function diagram(T,Z,ct,cz){
+var W=360,H=372,cx=180,k=3;
+function X(l){return cx+l*k}function Y(a){return 24+(a-22)*k}function P(l,a){return X(l)+","+Y(a)}
+function col(o){return o===null?"var(--accent)":o?"var(--ok)":"var(--bad)"}
+var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="R44 top view loading diagram">';
+for(var a=30;a<=130;a+=10)s+='<line x1="30" x2="'+(W-8)+'" y1="'+Y(a)+'" y2="'+Y(a)+'" stroke="var(--line)" stroke-dasharray="2 4"/><text x="26" y="'+(Y(a)+3)+'" font-size="9" text-anchor="end" fill="var(--muted)">'+a+'</text>';
+s+='<text x="4" y="12" font-size="9" fill="var(--muted)">Station (in)</text><text x="'+cx+'" y="12" font-size="10" text-anchor="middle" fill="var(--muted)">NOSE ▲</text><text x="'+cx+'" y="368" font-size="10" text-anchor="middle" fill="var(--muted)">TAIL BOOM ▼</text>';
+s+='<line x1="'+X(-34)+'" x2="'+X(-34)+'" y1="'+Y(40)+'" y2="'+Y(120)+'" stroke="var(--muted)" stroke-width="4" stroke-linecap="round"/><line x1="'+X(34)+'" x2="'+X(34)+'" y1="'+Y(40)+'" y2="'+Y(120)+'" stroke="var(--muted)" stroke-width="4" stroke-linecap="round"/>';
+s+='<path d="M'+P(0,26)+' C'+P(14,26)+' '+P(23,38)+' '+P(24,52)+' L'+P(25,75)+' C'+P(25,88)+' '+P(22,96)+' '+P(22,108)+' L'+P(20,118)+' C'+P(16,124)+' '+P(5,124)+' '+P(3,132)+' L'+P(-3,132)+' C'+P(-5,124)+' '+P(-16,124)+' '+P(-20,118)+' L'+P(-22,108)+' C'+P(-22,96)+' '+P(-25,88)+' '+P(-25,75)+' L'+P(-24,52)+' C'+P(-23,38)+' '+P(-14,26)+' '+P(0,26)+'Z" fill="var(--soft)" stroke="var(--muted)" stroke-width="2"/>';
+[["d1",24,40,58],["d2",-24,40,58],["d3",24,68,86],["d4",-24,68,86]].forEach(function(d){var off=$(d[0]).checked;s+='<line x1="'+X(d[1])+'" x2="'+X(d[1])+'" y1="'+Y(d[2])+'" y2="'+Y(d[3])+'" stroke="'+(off?"var(--bad)":"var(--accent)")+'" stroke-width="'+(off?2:4)+'"'+(off?' stroke-dasharray="3 3"':'')+'/>'});
+[[-13.5,106,"mg",30.6,"Main"],[13,102,"ag",18.3,"Aux"]].forEach(function(t){var g=Math.min(v(t[2]),t[3]),fh=48*g/t[3],x=X(t[0])-24,y=Y(t[1])-24;s+='<rect x="'+x+'" y="'+y+'" width="48" height="48" rx="6" fill="var(--card)" stroke="var(--muted)"/><rect x="'+x+'" y="'+(y+48-fh)+'" width="48" height="'+fh+'" rx="4" fill="var(--accent)" fill-opacity=".35"/><text x="'+(x+24)+'" y="'+(y+21)+'" font-size="10" text-anchor="middle" fill="var(--ink)">'+t[4]+'</text><text x="'+(x+24)+'" y="'+(y+35)+'" font-size="11" font-weight="700" text-anchor="middle" fill="var(--ink)">'+v(t[2])+' gal</text>'});
+var sn=["Pilot","Front L","Rear R","Rear L"];
+S.forEach(function(q,i){var b=Bg[i],w=v(q[0]),bg=v(b[0]),bad=w+bg>300||bg>50,x=X(q[3])-26,y=Y(q[2])-24;s+='<rect x="'+x+'" y="'+y+'" width="52" height="48" rx="8" fill="var(--card)" stroke="'+(bad?"var(--bad)":"var(--accent)")+'" stroke-width="2"/><text x="'+(x+26)+'" y="'+(y+14)+'" font-size="9" text-anchor="middle" fill="var(--muted)">'+sn[i]+'</text><text x="'+(x+26)+'" y="'+(y+30)+'" font-size="14" font-weight="700" text-anchor="middle" fill="var(--ink)">'+(w||"–")+'</text><text x="'+(x+26)+'" y="'+(y+42)+'" font-size="9" text-anchor="middle" fill="var(--muted)">bag '+bg+'</text>'});
+s+='<line x1="30" x2="'+(W-8)+'" y1="'+Y(100)+'" y2="'+Y(100)+'" stroke="var(--muted)" stroke-dasharray="6 3"/><circle cx="'+X(0)+'" cy="'+Y(100)+'" r="6" fill="var(--ink)"/><text x="34" y="'+(Y(100)-4)+'" font-size="9" fill="var(--muted)">Mast (100)</text>';
+[[T,"Takeoff",ct,-3,1],[Z,"Zero fuel",cz,11,0]].forEach(function(r){var y=Y(r[0].cg),c=col(r[2]);s+='<line x1="'+X(r[0].lat)+'" x2="'+(W-96)+'" y1="'+y+'" y2="'+y+'" stroke="'+c+'" stroke-width="1.5"/><text x="'+(W-8)+'" y="'+(y+r[3])+'" font-size="10" font-weight="700" text-anchor="end" fill="'+c+'">'+r[1]+" "+r[0].cg.toFixed(1)+'</text><circle cx="'+X(r[0].lat)+'" cy="'+y+'" r="7" fill="'+(r[4]?c:"var(--card)")+'" stroke="'+c+'" stroke-width="3"/>'});
+$("diag").innerHTML=s+'</svg>';
+function d(r,n){var x=r.cg-100;return n+" CG "+r.cg.toFixed(1)+" in ("+Math.abs(x).toFixed(1)+" in "+(x<0?"forward":"aft")+" of mast)"}
+$("dtxt").textContent=d(T,"Takeoff")+" · "+d(Z,"Zero fuel")}
+var KEY="r44wb-N439LL-v4";
+function load(){try{var d=JSON.parse(localStorage.getItem(KEY)||"{}");ALL.forEach(function(i){if(d[i]===undefined)return;var e=$(i);if(e.type=="checkbox")e.checked=d[i];else e.value=d[i]})}catch(x){}}
+function save(){try{var d={};ALL.forEach(function(i){var e=$(i);d[i]=e.type=="checkbox"?e.checked:e.value});localStorage.setItem(KEY,JSON.stringify(d))}catch(x){}}
+document.addEventListener("input",function(){save();run()});
+document.addEventListener("change",function(){save();run()});
+load();run();
+</script>
+</body>
+</html>
